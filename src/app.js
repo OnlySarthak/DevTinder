@@ -1,35 +1,16 @@
 const express = require('express');
+const auth = require('./middleware/auth')
 
 const app = express();
 
-app.use('/get-test', (req,res,next)=>{
-    // res.send("use test");
-    console.log("1");
-    
-    next();
-},(req,res,next)=>{
-    console.log("2");
-    // res.send("use test");
-    next();
-},(req,res)=>{
-    console.log("3");
-    res.send("use test");
-    // next();
-},);
+app.use('/profile',auth); 
 
+app.get('/profile/get-data', (req,res,)=>{
+    res.send("data fetched");
+});
 
-// app.get('/get-test', (req,res)=>{
-//     res.send("get test");
-// });
-// app.post('/get-test', (req,res)=>{
-//     res.send("post test with get-test");
-// });
-// app.post('/post-test', (req,res)=>{
-//     res.send("post test",req);
-// });
-// app.use('/get-test', (req,res)=>{
-//     res.send("use test with get-test, it will catch the extensions of /get-test at the end of file");
-// });
-
+app.post('/profile/put-data', (req,res,)=>{
+    res.send("data added");
+});
 
 app.listen(3000);
