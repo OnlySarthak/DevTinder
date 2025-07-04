@@ -1,19 +1,35 @@
 const express = require('express');
-// const auth = require('./middleware/auth')
+const bcrypt = require('bcrypt');
 const app = express();
 const connectDB = require('./config/database');
 const User = require('./models/user');
-const user = require('./models/user');
+const { validateSignUpData } = require('./utils/validation');
 
 app.use(express.json()); // Middleware to parse JSON bodies
 
 app.post('/register', async (req, res) => {
-    const userData = req.body;
-    // console.log("Received user data:", userData);
-    
-    const user = new User(userData);
+    try {
+        // Check if the user already exists
+        const existingUser = await User.find({ emailId: req.body.emailId });
+        if (existingUser.length > 0) {  
+            return res.status(400).send("User already exists");
+    }
 
-    try{
+    //validate the user data
+    validateSignUpData(req);
+
+    //encrypt the password
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    
+    const user = new User({
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        emailId: req.body.emailId,
+        password: hashedPassword, // Store the hashed password
+        age: req.body.age,
+        gender: req.body.gender
+    });
+
         await user.save();
         res.status(201).send("User registered successfully");
     } catch (error) {
@@ -21,6 +37,29 @@ app.post('/register', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+app.post('/login', async (req, res) => {
+    try {
+        // Find the user by emailId
+        const user = await User.findOne({ emailId: req.body.emailId });
+        if (!user) {  
+            return res.status(404).send("Invalid credentials");
+        }
+
+        // //check if the password is correct
+        const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).send("Invalid credentials");
+        }
+        else {
+            res.status(200).send("Login successful");
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal server error");
+    }
+});
+
     
 app.post('/user', async (req, res) => {
     try {

@@ -27,7 +27,8 @@ const userSchema = new mongoose.Schema({
     age: {
         type: Number,
         min: 0,
-        max: 120
+        max: 120,
+        required: true,
     },
     gender: {
         type: String ,
@@ -50,12 +51,7 @@ const userSchema = new mongoose.Schema({
     },
     skills: {
         type: [String],
-        default: ["no skills"],
-        validate(value) {
-            if (value.length < 4) {
-                throw new Error('Skills array must contain at least one skill');
-            }   
-        }
+        default: ["no skills"]
     },
 },{
     timestamps: true
