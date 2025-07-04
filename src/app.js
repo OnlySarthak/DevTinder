@@ -9,7 +9,7 @@ app.use(express.json()); // Middleware to parse JSON bodies
 
 app.post('/register', async (req, res) => {
     const userData = req.body;
-    console.log("Received user data:", userData);
+    // console.log("Received user data:", userData);
     
     const user = new User(userData);
 
@@ -58,8 +58,19 @@ app.delete('/user', async (req, res) => {
     }
 });
 
-app.patch('/user', async (req, res) => {
+app.patch('/user/:userId', async (req, res) => {
     try {
+
+        // Validate the request body
+        const allowedUpdates = ['firstName', 'lastName', 'password', 'age', 'skills', 'about', 'photourl'];
+        const updates = Object.keys(req.body);
+        const isValidOperation = Object.keys(req.body).every((update) => allowedUpdates.includes(update));
+
+        if (!isValidOperation) {
+            return res.status(400).send({ error: 'Invalid updates!' });
+        }
+
+        // Find the user by emailId
         const users = await User.find({emailId : req.body.emailId});
         
         if (users.length === 0) {  
@@ -67,7 +78,7 @@ app.patch('/user', async (req, res) => {
         }
         const id = users[0]._id.toString();
         
-        await User.findByIdAndUpdate(id, req.body);
+        await User.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
         
         res.status(200).send("User updated successfully");
     } catch (error) {

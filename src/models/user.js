@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -13,7 +14,12 @@ const userSchema = new mongoose.Schema({
     emailId: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error('Invalid email format');
+            }
+        }
     },
     password: {
         type: String
@@ -34,7 +40,8 @@ const userSchema = new mongoose.Schema({
     },
     photourl: {
         type: String,
-        default: 'https://example.com/default-profile.png'
+        default: 'https://example.com/default-profile.png',
+        
     },
     about: {
         type: String,
@@ -43,7 +50,12 @@ const userSchema = new mongoose.Schema({
     },
     skills: {
         type: [String],
-        default: ["no skills"]
+        default: ["no skills"],
+        validate(value) {
+            if (value.length < 4) {
+                throw new Error('Skills array must contain at least one skill');
+            }   
+        }
     },
 },{
     timestamps: true
