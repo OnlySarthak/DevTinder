@@ -3,16 +3,14 @@ const express = require('express');
 const app = express();
 const connectDB = require('./config/database');
 const User = require('./models/user');
+const user = require('./models/user');
+
 app.use(express.json()); // Middleware to parse JSON bodies
 
 app.post('/register', async (req, res) => {
-    const userData = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        emailId: req.body.emailId,
-        password: req.body.password,
-    };
-
+    const userData = req.body;
+    console.log("Received user data:", userData);
+    
     const user = new User(userData);
 
     try{
@@ -20,11 +18,63 @@ app.post('/register', async (req, res) => {
         res.status(201).send("User registered successfully");
     } catch (error) {
         console.error("Error registering user:", error);
-        res.status(500).send("Internal Server Error");
+        res.status(500).send(error.message);
     }
 });
     
-    
+app.post('/user', async (req, res) => {
+    try {
+        const users = await User.find({emailId : req.body.emailId});
+        
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).send(error.message);
+    }
+});
+
+app.get('/feed', async (req, res) => {
+    const feedData = await user.find();
+    try {
+        res.status(200).json(feedData);
+    } catch (error) {
+        console.error("Error fetching feed data:", error);
+        res.status(500).send(error.message);
+    }
+});
+
+app.delete('/user', async (req, res) => {
+    try {
+        const users = await User.find({emailId : req.body.emailId});
+        if (users.length === 0) {
+            return res.status(404).send("User not found");
+        }
+        const id = users._id;
+        await User.findByIdAndDelete(users);
+        res.status(200).send("User deleted successfully");
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).send(error.message);
+    }
+});
+
+app.patch('/user', async (req, res) => {
+    try {
+        const users = await User.find({emailId : req.body.emailId});
+        
+        if (users.length === 0) {  
+            return res.status(404).send("User not found");
+        }
+        const id = users[0]._id.toString();
+        
+        await User.findByIdAndUpdate(id, req.body);
+        
+        res.status(200).send("User updated successfully");
+    } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).send(error.message);
+    }
+});
 
 connectDB().then(() => {
     console.log("Database connected successfully");
