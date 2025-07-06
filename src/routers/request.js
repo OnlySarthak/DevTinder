@@ -16,18 +16,11 @@ requestRouter.get('/request/send/:status/:userId', auth, async (req, res) => {
             throw new Error("invalid status " + status);
         }
 
-        //check both ids are same
-        if(fromUserId.toString() === toUserId.toString()){
-            throw new Error("Invalid Request : cannot send request to self");
-        }
-
         //check toUserId is exist
         const isToUserExist = User.findOne({_id :toUserId});
         if(!isToUserExist){
             res.status(400).send("Invalid User");
         }
-
-
 
         //check exiting documents
         const isExistingRequestPresent = await ConnectionRequest.findOne({
@@ -40,7 +33,8 @@ requestRouter.get('/request/send/:status/:userId', auth, async (req, res) => {
         if(isExistingRequestPresent){
             throw new Error("Request connecction already exist...");
         }
-        
+
+        //declare and define new connection request object
         const Connection = new ConnectionRequest({
             fromUserId,
             toUserId,
