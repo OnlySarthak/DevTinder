@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema({
         type: String ,
         required: true,
         validate(value) {
-            if(['male','female','other'].indexOf(value) === -1) {
+            if(['male','female','other'].includes(value) === -1) {
                 throw new Error('Invalid gender value');
             }
         }

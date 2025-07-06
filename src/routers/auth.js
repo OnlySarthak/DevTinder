@@ -31,7 +31,10 @@ authRouter.post('/register', async (req, res) => {
         });
         
         await user.save(); // Save the user to the database
-        res.status(201).send("User registered successfully");
+        res.status(201).send({
+            message : "User registered successfully",
+            newUser : user
+        });
 
     } catch (error) {
         console.error("Error registering user:", error);
@@ -63,5 +66,12 @@ authRouter.post('/login', async (req, res) => {
         res.status(500).send("Internal server error");
     }
 });
+
+authRouter.get('/logout', (req, res)=>{
+    res.cookie("token",null,{
+        expires : new Date(Date.now())
+    } )
+    res.send("logout successful");
+})
 
 module.exports = authRouter;
