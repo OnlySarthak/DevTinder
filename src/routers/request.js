@@ -5,21 +5,21 @@ const User = require('../models/user');
 
 const requestRouter = express.Router();
 
-requestRouter.get('/request/send/:status/:userId', auth, async (req, res) => {
+requestRouter.post('/request/send/:status/:userId', auth, async (req, res) => {
     try {
         
-        const fromUserId = req.user._id;
+        const fromUserId = req.user._id;    //current
         const toUserId = req.params.userId;
         const status = req.params.status;
 
         if( !['intrested','ignored'].includes(status) ){
-            throw new Error("invalid status " + status);
+            return res.status(200).send("invalid status " + status);
         }
 
         //check toUserId is exist
         const isToUserExist = User.findOne({_id :toUserId});
         if(!isToUserExist){
-            res.status(400).send("Invalid User");
+            return res.status(200).send("Invalid User");
         }
 
         //check exiting documents
@@ -31,7 +31,7 @@ requestRouter.get('/request/send/:status/:userId', auth, async (req, res) => {
         })
 
         if(isExistingRequestPresent){
-            throw new Error("Request connecction already exist...");
+            return res.status(200).send("Request connecction already exist...");
         }
 
         //declare and define new connection request object
@@ -47,6 +47,42 @@ requestRouter.get('/request/send/:status/:userId', auth, async (req, res) => {
         res.send({
             message : 'Your request created successfully',
             Connection
+        });
+    } catch (err) {
+        res.status(400).send(err.message);
+    }
+});
+
+requestRouter.post('/request/review/:status/:userId', auth, async (req, res) => {
+    try {
+        
+        const fromUserId = req.params.userId;
+        const toUserId = req.user._id;  //current logged user
+        const status = req.params.status;
+
+        //verify status
+        if( !['accepted','rejected'].includes(status) ){
+            return res.status(200).send("invalid status " + status);
+        }
+
+        //check exiting documents
+        const isExistingRequestPresent = await ConnectionRequest.findOne({
+            fromUserId,
+            toUserId, //current
+            status : 'intrested' 
+        });
+        if(!isExistingRequestPresent){
+            return res.status(200).send("Invalid request.");
+        }
+
+        isExistingRequestPresent.status = status;
+        
+        await isExistingRequestPresent.save();   
+        
+        // console.log(connectionSchema);
+        res.send({
+            message : 'Your request updated successfully',
+            isExistingRequestPresent
         });
     } catch (err) {
         res.status(400).send(err.message);

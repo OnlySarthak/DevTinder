@@ -1,7 +1,4 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 
 const connectionSchema = new mongoose.Schema({
     fromUserId: {
@@ -16,7 +13,7 @@ const connectionSchema = new mongoose.Schema({
         type: String,
         required: true,
         eva:{
-            values : ['intrested','ignores'],
+            values : ['intrested','ignores','accepted','rejected'],
             message : '{value} is not allowed'
         }
     }
