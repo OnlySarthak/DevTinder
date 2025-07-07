@@ -9,8 +9,9 @@ app.use(cookieParser()); // Middleware to parse cookies
 const auth = require('./routers/auth');
 const profile = require('./routers/profile');
 const request = require('./routers/request');
+const user = require('./routers/user');
 
-app.use('/', auth, profile, request);
+app.use('/', auth, profile, request, user);
 
 
 connectDB().then(() => {
