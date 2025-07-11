@@ -2,6 +2,7 @@ const express = require('express');
 const connectDB = require('./config/database');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+require('dotenv').config(); // Load environment variables from .env file
 
 const app = express();
 
@@ -22,8 +23,8 @@ app.use('/', auth, profile, request, user);
 
 connectDB().then(() => {
     console.log("Database connected successfully");
-    app.listen(3000, () => {
-        console.log("Server is running on port 3000");
+    app.listen(process.env.PORT , () => {
+        console.log("Server is running on port "+process.env.PORT);
     });
 }).catch(err => {
     console.error("Failed to connect to the database:", err);
