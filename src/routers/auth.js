@@ -58,7 +58,13 @@ authRouter.post('/login', async (req, res) => {
         else {
             const token = await user.generateAuthToken(); // Generate a token for the user
             //send cookies back to the client
-            res.cookie('token', token);
+            res.cookie('token', token, {
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: false,
+                maxAge: 7 * 24 * 60 * 60 * 1000
+                });
+
             res.status(200).json({message : "Login successful",
                 data : user
             });
