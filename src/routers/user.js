@@ -22,10 +22,17 @@ userRouter.get('/user/request/received', auth, async (req, res) => {
       return res.send("you are not intrested for everyone");
     }
 
+    const data = intrestedRequestList.map((row) => {
+        return {
+          data: row.fromUserId,
+          _id: row._id
+        }
+    });
+
     res.send({
       message: "data fetched successfuly",
-      data: intrestedRequestList
-    })
+      data: data
+    });
   } catch (error) {
     res.status(400).send("invalid request");
   }
