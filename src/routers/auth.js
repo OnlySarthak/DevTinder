@@ -27,13 +27,15 @@ authRouter.post('/register', async (req, res) => {
             emailId: req.body.emailId,
             password: hashedPassword, // Store the hashed password
             age: req.body.age,
-            gender: req.body.gender
+            gender: req.body.gender,
+            about:req.body.about,
+            photourl : req.body.photourl
         });
         
         await user.save(); // Save the user to the database
         res.status(201).send({
             message : "User registered successfully",
-            newUser : user
+            data : user
         });
 
     } catch (error) {
@@ -58,12 +60,7 @@ authRouter.post('/login', async (req, res) => {
         else {
             const token = await user.generateAuthToken(); // Generate a token for the user
             //send cookies back to the client
-            res.cookie('token', token, {
-                httpOnly: true,
-                sameSite: 'lax',
-                secure: false,
-                maxAge: 7 * 24 * 60 * 60 * 1000
-                });
+            res.cookie('token', token);
 
             res.status(200).json({message : "Login successful",
                 data : user
@@ -75,11 +72,17 @@ authRouter.post('/login', async (req, res) => {
     }
 });
 
-authRouter.get('/logout', (req, res)=>{
-    res.cookie("token",null,{
-        expires : new Date(Date.now())
-    } )
-    res.send("logout successful");
-})
+authRouter.post('/logout', (req, res) => {
+  res.clearCookie('token', 
+    {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'None',
+    path: '/', // whatever was used originally
+  }
+);
+  res.json({ message: 'Logout successful' });
+});
+
 
 module.exports = authRouter;

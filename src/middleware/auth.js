@@ -5,10 +5,11 @@ const auth = async (req,res,next)=>{
     try {
         // verify the token
         const token = req.cookies?.token;
+        
         if (!token) {
             return res.status(401).send("Invalid token");
         }
-
+        
         // Decode the token to get the userId
         const decodedData = jwt.verify(token, 'randomSecret'); // Use the same secret as when the token was created
         const {userId} = decodedData;

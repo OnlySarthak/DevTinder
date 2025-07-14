@@ -89,6 +89,24 @@ requestRouter.post('/request/review/:status/:userId', auth, async (req, res) => 
     }
 });
 
+requestRouter.delete('/request/delete/:_id',auth, async(req, res)=>{
+    try {
+        const deleteUserId = req.params._id;
 
+        const deletedUserId =  await ConnectionRequest.findByIdAndDelete({
+            _id : deleteUserId
+        });
+
+        if(deletedUserId){
+            return res.status(200).json({message:"connection deleted successfuly"})
+        }
+        if(!deletedUserId){
+            return res.status(404).json({message:"connection not found!"})
+        }
+
+    } catch (error) {
+        res.status(400).send(err.message);
+    }
+})
 
 module.exports = requestRouter;

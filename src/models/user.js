@@ -29,17 +29,13 @@ const userSchema = new mongoose.Schema({
     age: {
         type: Number,
         min: 0,
-        max: 120,
+        max: 100,
         required: true,
     },
     gender: {
         type: String ,
         required: true,
-        validate(value) {
-            if(['male','female','other'].includes(value) === -1) {
-                throw new Error('Invalid gender value');
-            }
-        }
+        enum: ['male', 'female', 'other'],
     },
     photourl: {
         type: String,
@@ -49,7 +45,7 @@ const userSchema = new mongoose.Schema({
     about: {
         type: String,
         default: "This is a default about section.",
-        maxlength: 500
+        maxlength:50
     },
     skills: {
         type: [String],
@@ -62,7 +58,7 @@ const userSchema = new mongoose.Schema({
 userSchema.methods.generateAuthToken = function() {
     const user = this;
     const token = jwt.sign({ userId: user._id }, 'randomSecret', {
-        expiresIn: '1h' // Token expiration time
+        expiresIn: '1d' // Token expiration time
     });
     return token;
 };
