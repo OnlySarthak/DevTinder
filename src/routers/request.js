@@ -46,7 +46,7 @@ requestRouter.post('/request/send/:status/:userId', auth, async (req, res) => {
         // console.log(connectionSchema);
         res.send({
             message : 'Your request created successfully',
-            Connection
+            data : Connection
         });
     } catch (err) {
         res.status(400).send(err.message);
