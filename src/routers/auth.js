@@ -7,20 +7,21 @@ const authRouter = express.Router();
 
 authRouter.post('/register', async (req, res) => {
     try {
-        
+
         // Check if the user already exists
         const existingUser = await User.find({ emailId: req.body.emailId });
         
         // If user already exists, return an error  
         if (existingUser.length > 0) {
-            return res.status(400).send("User already exists with this emailId");   
+            return res.status(400).send("User already exists with this emailId");
         }
         //validate the user data
         validateSignUpData(req);
         
+
         //encrypt the password
-        const hashedPassword = await bcrypt.hash(req.body.password , 10);
-        
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
         const user = new User({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
@@ -28,14 +29,21 @@ authRouter.post('/register', async (req, res) => {
             password: hashedPassword, // Store the hashed password
             age: req.body.age,
             gender: req.body.gender,
-            about:req.body.about,
-            photourl : req.body.photourl
+            about: req.body.about,
+            photourl: req.body.photourl
         });
-        
+
         await user.save(); // Save the user to the database
+
+        
+        //make user logged in 
+        const token = await user.generateAuthToken(); // Generate a token for the user
+        //send cookies back to the client
+        res.cookie('token', token);
+
         res.status(201).send({
-            message : "User registered successfully",
-            data : user
+            message: "User registered and logged in succesfully successfully",
+            data: user
         });
 
     } catch (error) {
@@ -48,7 +56,7 @@ authRouter.post('/login', async (req, res) => {
     try {
         // Find the user by emailId
         const user = await User.findOne({ emailId: req.body?.emailId });
-        if (!user) {  
+        if (!user) {
             return res.status(404).send("Invalid credentials");
         }
 
@@ -62,8 +70,9 @@ authRouter.post('/login', async (req, res) => {
             //send cookies back to the client
             res.cookie('token', token);
 
-            res.status(200).json({message : "Login successful",
-                data : user
+            res.status(200).json({
+                message: "Login successful",
+                data: user
             });
         }
     } catch (error) {
@@ -73,15 +82,15 @@ authRouter.post('/login', async (req, res) => {
 });
 
 authRouter.post('/logout', (req, res) => {
-  res.clearCookie('token', 
-    {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'None',
-    path: '/', // whatever was used originally
-  }
-);
-  res.json({ message: 'Logout successful' });
+    res.clearCookie('token',
+        {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'None',
+            path: '/', // whatever was used originally
+        }
+    );
+    res.json({ message: 'Logout successful' });
 });
 
 
