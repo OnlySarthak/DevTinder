@@ -2,6 +2,7 @@ const express = require('express');
 const auth = require('../middleware/auth');
 const ConnectionRequest = require('../models/connectionRequest');
 const User = require('../models/user');
+const sendEmail = require('../utils/sendEmail'); // Import the sendEmail utility
 
 const requestRouter = express.Router();
 
@@ -42,7 +43,11 @@ requestRouter.post('/request/send/:status/:userId', auth, async (req, res) => {
         });
         
         await Connection.save();   
-        
+
+        //send email
+        const response = await sendEmail.run();
+        console.log("Email sent successfully:", response);
+                
         // console.log(connectionSchema);
         res.send({
             message : 'Your request created successfully',

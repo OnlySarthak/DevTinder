@@ -11,7 +11,7 @@ const auth = async (req,res,next)=>{
         }
         
         // Decode the token to get the userId
-        const decodedData = jwt.verify(token, 'randomSecret'); // Use the same secret as when the token was created
+        const decodedData = jwt.verify(token, process.env.JWT_SECRETE); // Use the same secret as when the token was created
         const {userId} = decodedData;
 
         // Find the user by userId

@@ -3,6 +3,8 @@ const connectDB = require('./config/database');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 require('dotenv').config(); // Load environment variables from .env file
+const { createServer } = require("http");
+const initalizeSocket = require("./utils/initializeSocket");
 
 const app = express();
 
@@ -20,10 +22,13 @@ const user = require('./routers/user');
 
 app.use('/', auth, profile, request, user);
 
+const Server = createServer(app);
+
+initalizeSocket(Server);
 
 connectDB().then(() => {
     console.log("Database connected successfully");
-    app.listen(process.env.PORT , () => {
+    Server.listen(process.env.PORT , () => {
         console.log("Server is running on port "+process.env.PORT);
     });
 }).catch(err => {
