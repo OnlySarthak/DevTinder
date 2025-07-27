@@ -19,8 +19,9 @@ const auth = require('./routers/auth');
 const profile = require('./routers/profile');
 const request = require('./routers/request');
 const user = require('./routers/user');
+const chatMessages = require('./routers/chatMessages');
 
-app.use('/', auth, profile, request, user);
+app.use('/', auth, profile, request, user, chatMessages);
 
 const Server = createServer(app);
 

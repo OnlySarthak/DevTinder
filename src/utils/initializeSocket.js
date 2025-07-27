@@ -1,4 +1,6 @@
-const { Server } = require("socket.io"); // ✅ get the Server class
+const { Server } = require("socket.io");
+const Chat = require("../models/chat");
+const ConnectionRequest = require("../models/connectionRequest");
 
 const initializeSocket = (server) => {
     const io = new Server(server, {
@@ -11,24 +13,58 @@ const initializeSocket = (server) => {
     io.on("connection", (socket) => {
         console.log("✅ User connected:", socket.id);
 
-        // ✅ When client joins
-        socket.on("join", ({ userId, targetUserId }) => {
-            const roomId = [userId, targetUserId].sort().join("_");
-            socket.join(roomId); // ✅ MUST JOIN ROOM
-            console.log(`User ${userId} joined room ${roomId}`);
+        socket.on("join", async ({ userId, targetUserId }) => {
+            try {
+                // verify users are already friends
+                const connection = await ConnectionRequest.findOne({
+                    $or: [
+                        { fromUserId: userId, toUserId: targetUserId, status: "accepted" },
+                        { fromUserId: targetUserId, toUserId: userId, status: "accepted" },
+                    ],
+                });
+
+                if (!connection) {
+                    console.log("Invalid user: not friends");
+                    return; // Stop here
+                }
+
+                const roomId = [userId, targetUserId].sort().join("_");
+                socket.join(roomId);
+                console.log(`User ${userId} joined room ${roomId}`);
+            } catch (err) {
+                console.error("Error in join:", err);
+            }
         });
 
-        // ✅ When client sends message
-        socket.on("sendMessage", ({ userId, targetUserId, text }) => {
-            const roomId = [userId, targetUserId].sort().join("_");
 
-            // ✅ Send to everyone in that room
-            io.to(roomId).emit("messageReceived", {
-                senderId: userId,
-                text,
-            });
+        socket.on("sendMessage", async ({ userId, targetUserId, text }) => {
+            try {
+                const roomId = [userId, targetUserId].sort().join("_");
 
-            console.log(`📨 Message sent to ${roomId}: ${text}`);
+                let chat = await Chat.findOne({
+                    participants: { $all: [userId, targetUserId] },
+                });
+
+                if (!chat) {
+                    // ✅ Create new chat and save
+                    chat = new Chat({
+                        participants: [userId, targetUserId],
+                        messages: [{ senderId: userId, text }],
+                    });
+                    await chat.save();
+                } else {
+                    // ✅ Add new message and save
+                    chat.messages.push({ senderId: userId, text });
+                    await chat.save();
+                }
+
+                // ✅ Emit to everyone in the room
+                io.to(roomId).emit("messageReceived", { senderId: userId, text });
+
+                console.log(`📨 Message sent to ${roomId}: ${text}`);
+            } catch (error) {
+                console.log("❌ Error sending message:", error);
+            }
         });
 
         socket.on("disconnect", () => {
